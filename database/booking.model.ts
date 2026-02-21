@@ -51,10 +51,14 @@ BookingSchema.pre('save', async function () {
         throw error;
       }
     } catch (err) {
-      if ((err as Error).name === 'ValidationError') throw err;
-      const validationError = new Error('Invalid events ID format or database error');
-      validationError.name = 'ValidationError';
-      throw validationError;
+      const errName = (err as Error).name;
+      if (errName === 'ValidationError') throw err;
+      if (errName === 'CastError') {
+        const validationError = new Error('Invalid event ID format');
+        validationError.name = 'ValidationError';
+        throw validationError;
+      }
+      throw err; // Preserve DB/connection errors
     }
   }
 });
