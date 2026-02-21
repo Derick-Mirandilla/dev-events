@@ -259,9 +259,10 @@ export async function POST(request: Request) {
     }
   });
 
+  await posthog.shutdown();
+
   return NextResponse.json({ success: true, user });
 }
-```
 
 ---
 
