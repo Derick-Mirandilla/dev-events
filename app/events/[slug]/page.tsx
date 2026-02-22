@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { Suspense } from "react";
 import BookEvent from "@/components/BookEvent";
 import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
 import { IEvent } from "@/database/event.model";
@@ -34,7 +35,21 @@ const EventTags = ({ tags }: { tags: string[] }) => (
     </div>
 )
 
-const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }>}) => {
+const SimilarEvents = async ({ slug }: { slug: string }) => {
+    const similarEvents: IEvent[] = JSON.parse(JSON.stringify(await getSimilarEventsBySlug(slug)));
+
+    if (similarEvents.length === 0) return null;
+
+    return (
+        <div className="events">
+            {similarEvents.map((similarEvent: IEvent) => (
+                <EventCard key={similarEvent.title} {...similarEvent} />
+            ))}
+        </div>
+    );
+};
+
+const EventContent = async ({ params }: { params: Promise<{ slug: string }>}) => {
     const { slug } = await params;
 
     let event;
@@ -66,8 +81,6 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }>}
     if(!description) return notFound();
 
     const bookings = 10;
-
-    const similarEvents: IEvent[] = JSON.parse(JSON.stringify(await getSimilarEventsBySlug(slug)));
 
     return (
         <section id="event">
@@ -125,13 +138,20 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }>}
 
             <div className="flex w-full flex-col gap-4 pt-20">
                 <h2>Similar Events</h2>
-                <div className="events">
-                    {similarEvents.length > 0 && similarEvents.map((similarEvent: IEvent) => (
-                        <EventCard key={similarEvent.title} {...similarEvent} />
-                    ))}
-                </div>
+                <Suspense fallback={<p>Loading similar events...</p>}>
+                    <SimilarEvents slug={slug} />
+                </Suspense>
             </div>
         </section>
     )
 }
+
+const EventDetailsPage = ({ params }: { params: Promise<{ slug: string }>}) => {
+    return (
+        <Suspense fallback={<p>Loading event...</p>}>
+            <EventContent params={params} />
+        </Suspense>
+    );
+}
 export default EventDetailsPage
+
