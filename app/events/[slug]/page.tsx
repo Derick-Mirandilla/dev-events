@@ -5,6 +5,7 @@ import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
 import { IEvent } from "@/database/event.model";
 import EventCard from "@/components/EventCard";
 
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const EventDetailItem = ({ icon, alt, label }: { icon: string; alt: string; label: string; }) => (
@@ -66,7 +67,7 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }>}
 
     const bookings = 10;
 
-    const similarEvents: IEvent[] = await getSimilarEventsBySlug(slug);
+    const similarEvents: IEvent[] = JSON.parse(JSON.stringify(await getSimilarEventsBySlug(slug)));
 
     return (
         <section id="event">
@@ -117,7 +118,7 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }>}
                                 <p className="text-sm">Be the first to book your spot!</p>
                             )}
 
-                            <BookEvent />
+                            <BookEvent eventId={event._id.toString()} slug={event.slug} />
                         </div>
                     </aside>
                 </div>
