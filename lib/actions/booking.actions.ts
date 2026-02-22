@@ -11,11 +11,8 @@ export const createBooking = async ({ eventId, slug, email }: { eventId: string;
         await Booking.create({ eventId, slug, email });
 
         return { success: true };
-    } catch (e: unknown) {
-        if (e && typeof e === 'object' && 'code' in e && e.code === 11000) {
-            return { success: false, error: 'duplicate' };
-        }
+    } catch (e) {
         console.error('create booking failed', e);
-        return { success: false, error: 'unknown' };
+        return { success: false };
     }
 }
